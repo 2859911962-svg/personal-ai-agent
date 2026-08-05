@@ -1,0 +1,8 @@
+# 个人 AI 智能体
+
+node_modules/
+__pycache__/
+*.pyc
+data/
+.env
+.DS_Store

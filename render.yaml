@@ -1,0 +1,12 @@
+# 个人AI智能体
+
+name: personal-ai-agent
+services:
+  - name: web
+    type: web
+    runtime: python
+    build_command: pip install -r requirements.txt
+    start_command: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+    envs:
+      - key: DEEPSEEK_API_KEY
+        value: sk-your-key-here
