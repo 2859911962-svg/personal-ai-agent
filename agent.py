@@ -16,8 +16,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-from google import genai
-from google.genai import types
+# Gemini SDK（可选，国内用户可跳过）
+try:
+    from google import genai
+    from google.genai import types
+    HAS_GEMINI = True
+except ImportError:
+    HAS_GEMINI = False
+    genai = None
+    types = None
 from openai import OpenAI
 
 
@@ -426,11 +433,11 @@ class PersonalAgent:
         self.history = ConversationHistory(user_id)
         self.persona = self._load_persona()
 
-        # Gemini 客户端（新版 SDK）
+        # Gemini 客户端（新版 SDK，可选）
         self.gemini_key = GEMINI_API_KEY
         self.gemini_client = None
         self.gemini_tool = None
-        if self.gemini_key:
+        if self.gemini_key and HAS_GEMINI:
             self.gemini_client = genai.Client(api_key=self.gemini_key)
             self.gemini_tool = _to_gemini_tool_declarations()
 
@@ -485,6 +492,8 @@ class PersonalAgent:
 
     def _try_gemini(self, user_message: str) -> Optional[str]:
         """尝试用 Gemini 回复，失败返回 None"""
+        if not HAS_GEMINI:
+            return None
         if not self.gemini_client:
             return None
         if self._gemini_fails >= 3:
