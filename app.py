@@ -140,7 +140,7 @@ st.markdown("""
         font-size: 15px !important;
     }
     .stChatInput input::placeholder {
-        color: #3a4a5a !important;
+        color: #3a4a5a !important; 
     }
 
     /* 登录页 */
@@ -290,6 +290,16 @@ def add_message(role: str, content: str):
 # ============================================================
 # 登录页面
 # ============================================================
+    # 自动恢复登录
+    st.markdown("""
+    <script>
+    const user = localStorage.getItem('agent_user');
+    const token = localStorage.getItem('agent_token');
+    if (user && token && !window.location.search.includes('user=')) {
+        window.location.search = '?user=' + encodeURIComponent(user) + '&token=' + encodeURIComponent(token);
+    }
+    </script>
+    """, unsafe_allow_html=True)
 
 if not st.session_state.logged_in:
     st.markdown("""
@@ -311,10 +321,21 @@ if not st.session_state.logged_in:
                 st.session_state.logged_in = True
                 st.session_state.username = login_user
                 agent = PersonalAgent(login_user)
-                greeting = agent.persona.get("greeting", f"嗨！我是{agent.persona['name']}，你的专属伙伴 👋")
+                greeting = agent.persona.get("greeting", f"嗨！我是{agent.persona['name']}，独属于你的朋友 👋")
                 st.session_state.messages = []
                 add_message("assistant", greeting)
+                import hashlib
+                token = hashlib.sha256(f"{login_user}_agent_session".encode()).hexdigest()[:16]
+                st.query_params["user"] = login_user
+                st.query_params["token"] = token
+                st.markdown(f"""
+                <script>
+                localStorage.setItem('agent_user', '{login_user}');
+                localStorage.setItem('agent_token', '{token}');
+                </script>
+                """, unsafe_allow_html=True)
                 st.rerun()
+
             else:
                 st.error("用户名或密码错误")
 
